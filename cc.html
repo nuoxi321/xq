@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心情信件</title>
+    <style>
+        /* 全局样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #FFB6C1, #E6E6FA);
+            min-height: 100vh;
+            color: #5a3d5a;
+        }
+        
+        /* 登录页面样式 */
+        #login-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #login-page h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        #login-form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        #login-form input {
+            margin: 10px 0;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 1rem;
+        }
+        
+        #login-form button {
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        #login-form button:hover {
+            background-color: #ff4da6;
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            color: #ff3333;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        /* 主页面样式 */
+        #main-page {
+            min-height: 100vh;
+            padding: 20px;
+            display: none; /* 初始隐藏 */
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.7);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: #FF69B4;
+        }
+        
+        #main-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 50px;
+        }
+        
+        #main-header h2 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+        }
+        
+        #main-header p {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-top: 0;
+        }
+        
+        .instructions {
+            background-color: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 0 auto 20px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .mood-btn {
+            background-color: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1/1;
+        }
+        
+        .mood-btn:hover {
+            transform: translateY(-5px);
+            background-color: rgba(255,255,255,0.9);
+            border-color: #FF69B4;
+        }
+        
+        .mood-btn img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        
+        .mood-btn p {
+            margin: 0;
+            font-weight: bold;
+            color: #FF69B4;
+            font-size: 0.9rem;
+        }
+        
+        /* 信件页面样式 */
+        #letters-page {
+            min-height: 100vh;
+            padding: 20px;
+            display: none;
+            position: relative;
+        }
+        
+        .envelopes-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .envelope {
+            position: relative;
+            width: 100px;
+            height: 80px;
+            background-color: #f8e8e8;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        
+        .envelope:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-top: 30px solid #f9d5d5;
+            transform-origin: top;
+            transform: rotateX(0deg);
+            transition: all 0.5s ease;
+            z-index: 2;
+        }
+        
+        .envelope:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8e8e8;
+            border-radius: 0 0 5px 5px;
+            z-index: 1;
+        }
+        
+        .envelope.opened:before {
+            transform: rotateX(180deg);
+        }
+        
+        .envelope-number {
+            position: relative;
+            z-index: 3;
+            color: #FF69B4;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .letter-content {
+            background-color: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px auto;
+            max-width: 600px;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            transform: scale(0);
+            animation: letterOpen 0.5s forwards;
+            border: 1px solid #FFB6C1;
+        }
+        
+        @keyframes letterOpen {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .letter-content:before {
+            content: '✉️';
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            font-size: 30px;
+            transform: rotate(-15deg);
+        }
+        
+        .letter-content:after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23FF69B4" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+            background-repeat: no-repeat;
+            opacity: 0.3;
+        }
+        
+        .letter-content p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+            color: #5a3d5a;
+        }
+        
+        .back-btn {
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            display: block;
+            margin: 20px auto 0;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background-color: #ff4da6;
+            transform: translateY(-2px);
+        }
+        
+        /* 管理员页面样式 */
+        #admin-page {
+            min-height: 100vh;
+            padding: 20px;
+            display: none;
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        #admin-login {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        
+        #admin-login input {
+            margin: 10px 0;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 1rem;
+            width: 200px;
+        }
+        
+        #admin-login button {
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        #admin-login button:hover {
+            background-color: #ff4da6;
+            transform: translateY(-2px);
+        }
+        
+        .admin-error {
+            color: #ff3333;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .admin-content {
+            width: 100%;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .admin-table th, .admin-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .admin-table th {
+            background-color: #FF69B4;
+            color: white;
+        }
+        
+        .admin-table tr:hover {
+            background-color: rgba(255,182,193,0.2);
+        }
+        
+        .admin-back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.7);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .admin-back-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #FF69B4;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .mood-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .envelopes-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mood-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .envelopes-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="login-page">
+        <h1>心情信件</h1>
+        <form id="login-form">
+            <input type="text" placeholder="用户名" required>
+            <input type="password" placeholder="密码" required>
+            <div class="error-message" id="login-error">密码错误，请重试</div>
+            <button type="submit">登录</button>
+        </form>
+        <button id="admin-access" style="margin-top: 20px; background: transparent; border: none; color: #FF69B4; cursor: pointer; text-decoration: underline;">管理员入口</button>
+    </div>
+    
+    <!-- 主页面 -->
+    <div id="main-page">
+        <button class="back-button" id="main-back-btn" style="display: none;">
+            <svg viewBox="0 0 24 24">
+                <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+            </svg>
+        </button>
+        
+        <div id="main-header">
+            <h2>欢迎回来，<span id="username">用户名</span>!</h2>
+            <p>选择一个适合你当下心情的图案</p>
+        </div>
+        
+        <div class="instructions">
+            <p>使用说明：选择一个适合你当下心情的图案点开看</p>
+        </div>
+        
+        <div class="mood-grid">
+            <div class="mood-btn" data-mood="不开心">
+                <img src="https://emojicdn.elk.sh/😞" alt="不开心">
+                <p>不开心</p>
+            </div>
+            <div class="mood-btn" data-mood="失望">
+                <img src="https://emojicdn.elk.sh/😔" alt="失望">
+                <p>失望</p>
+            </div>
+            <div class="mood-btn" data-mood="帅">
+                <img src="https://emojicdn.elk.sh/😎" alt="帅">
+                <p>帅</p>
+            </div>
+            <div class="mood-btn" data-mood="生气">
+                <img src="https://emojicdn.elk.sh/😠" alt="生气">
+                <p>生气</p>
+            </div>
+            <div class="mood-btn" data-mood="委屈">
+                <img src="https://emojicdn.elk.sh/🥺" alt="委屈">
+                <p>委屈</p>
+            </div>
+            <div class="mood-btn" data-mood="无语">
+                <img src="https://emojicdn.elk.sh/🙄" alt="无语">
+                <p>无语</p>
+            </div>
+            <div class="mood-btn" data-mood="开心">
+                <img src="https://emojicdn.elk.sh/😊" alt="开心">
+                <p>开心</p>
+            </div>
+            <div class="mood-btn" data-mood="哭">
+                <img src="https://emojicdn.elk.sh/😢" alt="哭">
+                <p>哭</p>
+            </div>
+            <div class="mood-btn" data-mood="白眼">
+                <img src="https://emojicdn.elk.sh/🙄" alt="白眼">
+                <p>白眼</p>
+            </div>
+            <div class="mood-btn" data-mood="困难">
+                <img src="https://emojicdn.elk.sh/😣" alt="困难">
+                <p>困难</p>
+            </div>
+            <div class="mood-btn" data-mood="惊讶">
+                <img src="https://emojicdn.elk.sh/😲" alt="惊讶">
+                <p>惊讶</p>
+            </div>
+            <div class="mood-btn" data-mood="生病">
+                <img src="https://emojicdn.elk.sh/🤒" alt="生病">
+                <p>生病</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 信件页面 -->
+    <div id="letters-page">
+        <button class="back-button" id="letters-back-btn">
+            <svg viewBox="0 0 24 24">
+                <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+            </svg>
+        </button>
+        
+        <div id="letters-header">
+            <h3 id="mood-title">不开心的时候...</h3>
+            <p>选择一个信封查看内容</p>
+        </div>
+        
+        <div class="envelopes-grid" id="envelopes-container">
+            <!-- 信封将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="letter-content" id="letter-content">
+            <!-- 信件内容将通过JavaScript动态生成 -->
+            <button class="back-btn">返回信封</button>
+        </div>
+    </div>
+    
+    <!-- 管理员页面 -->
+    <div id="admin-page">
+        <div id="admin-login">
+            <h2>管理员登录</h2>
+            <input type="password" id="admin-password" placeholder="请输入管理员密码">
+            <button id="admin-login-btn">登录</button>
+            <div class="admin-error">密码错误，请重试</div>
+        </div>
+        
+        <div class="admin-content" style="display: none;">
+            <button class="admin-back-btn" id="admin-back-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+                </svg>
+            </button>
+            
+            <h2>用户活动记录</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>心情类型</th>
+                        <th>信件编号</th>
+                        <th>打开时间</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-table-body">
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 完整的信件内容数据
+        const lettersData = {
+            "不开心": [
+                "不开心时，像被乌云暂时罩住啦。别慌，想想你爱的美食、喜欢的歌，它们是阳光，正使劲儿穿透乌云，马上就照亮你～",
+                "不开心来敲门，别让它赖着。你看窗外的树，不管风雨都努力长，你也一样呀，把坏心情赶跑，继续拥抱美好～",
+                "觉得不开心缠上自己，不妨去散散步。风会带走烦恼，路边小花也会朝你笑，回来就又是活力满满的你啦～",
+                "不开心的时候，别对自己太严苛。允许自己发会儿呆，然后翻翻相册，那些开心过往会跳出来，赶跑坏情绪～",
+                "不开心是暂时的小怪兽，你可是超级英雄呀！深呼吸，给它来个 \"情绪光波\"，一下就把它打跑，快乐马上回归～",
+                "不开心偷偷溜进心里，别闷着。找个安静角落，写写心情，写完把纸折成飞机飞出去，烦恼也跟着飞走咯～",
+                "不开心时，就当生活按了暂停键。趁机抱抱自己，告诉自己：\"我超棒的，坏情绪很快就会溜走～\" 然后重新出发～",
+                "不开心找上门，别慌，你有好多 \"快乐武器\" 呢，比如和朋友聊聊搞笑事儿，笑声会像扫帚，把不开心全扫光～",
+                "不开心笼罩你？去听听治愈系播客吧，温柔的声音、有趣的故事，像小毯子，慢慢把你从坏心情里包裹出来～",
+                "不开心的时候，别忘啦，你身边的美好一直都在，只是被乌云遮了眼。把乌云拨开，阳光和快乐马上涌进来～"
+            ],
+            "失望": [
+                "失望了没关系，就当是选礼物时挑错了包装，里面的惊喜可能迟到，但不会缺席。再等等，生活藏的美好正赶来～",
+                "遭遇失望，别否定努力呀。就像种子没立刻发芽，不是它不行，是在积蓄力量，你也一样，下次会绽放更艳～",
+                "对结果失望时，换个角度看，这是生活在教你分辨真正想要的。把这次当试错，下一站的精彩更值得期待～",
+                "失望袭来，别让心变冷。想想那些小确幸，比如清晨的阳光、偶然听到的喜欢的歌，它们是生活给的甜，能融化失望～",
+                "失望缠上你，别一直低头。抬头看看天，那么广阔，你的这点小失望，在蓝天里会慢慢变小，直至消散～",
+                "面对失望，别放弃相信美好。就像雨后会有彩虹，这次的失落，是为了让下次的惊喜更刻骨铭心呀～",
+                "失望的时候，别把自己困在过去。大步往前走，新的风景会出现，说不定转角就遇到让你欢呼的美好～",
+                "失望是生活偶尔的小调皮，它想考验你是不是还能保持热爱。别让它得逞，怀揣期待，美好很快就来～",
+                "对人对事失望时，别让情绪蔓延。给自己泡杯热茶，看热气升腾，把失望也一点点蒸散，心情会暖起来～",
+                "失望了，就当是一场小阵雨。雨停后，空气更清新，你的心情也会像被洗净的天空，重新明亮起来～"
+            ],
+            "帅": [
+                "哇，你今天这气场，戴着 \"帅\" 的墨镜出场啦！走路带风，眼神藏着自信，不管干啥，都像自带高光，妥妥主角～",
+                "当你点开 \"帅\"，就知道今天不一般！举手投足的潇洒，连阳光都追着给你打光，这魅力，谁看了不说一句绝～",
+                "选 \"帅\" 的你，自带闪光点呀！不管是穿搭的腔调，还是做事的利落，都在宣告：\"我超酷，生活由我主宰节奏～\"",
+                "嘿，\"帅\" 模式开启的你，仿佛自带 BGM ！每一步都踩出自信，笑容里藏着不羁与洒脱，这范儿，太让人惊艳～",
+                "点开 \"帅\"，就该昂首挺胸！你身上的朝气、眼里的坚定，像把小太阳揣怀里，走到哪都照亮一片，帅到没边～",
+                "今天以 \"帅\" 亮相，别藏着啦！你的独特气质，是人群里的星光，不管是搞怪还是认真，都有让人移不开眼的魔力～",
+                "选 \"帅\" 的你，就是行走的魅力教科书！一个挑眉、一个笑，都带着随性与自在，生活被你过成超酷的冒险～",
+                "当 \"帅\" 成为你的心情标签，就尽情绽放吧！你对生活的热爱、对未知的无畏，统统化作帅气，让日子闪闪发光～",
+                "哇哦，\"帅\" 的你登场，连空气都变带感！不管面对啥挑战，那股子从容与果敢，就是最牛的帅气证明～",
+                "点开 \"帅\"，就拥抱这份闪耀吧！你的自信、你的鲜活，把平凡日常晕染得超有格调，这才是真的帅到骨子里～"
+            ],
+            "生气": [
+                "生气啦？先别让怒火烧着自己！想想为不值得的事儿气到头疼，多不划算～不如深吸口气，放它像气球飘走，咱继续开心～",
+                "被惹得冒火，别着急爆发呀。先在心里倒数 10 个数，数着数着，会发现那些让你气的事儿，像小火星，灭得差不多啦～",
+                "正生着气，别跟自己较劲。去冰箱拿根冰棒，咬一口，凉意顺着舌尖往下，把怒火一点点浇灭，心情也跟着降温～",
+                "感觉要气炸，快喊 \"暂停\" ！打开手机听听舒缓的歌，旋律像温柔的手，把你的怒气慢慢揉开，重新变得平和～",
+                "因为小事生气，别让它发酵。对着镜子做个鬼脸，看着自己气呼呼又搞笑的样子，忍不住笑出声，气就消啦～",
+                "生气上头时，别让情绪控制你。去阳台看看绿植，它们不管风雨都安静生长，你的气也该像风一样，轻轻吹过就散～",
+                "被气得冒烟，别硬扛。找个抱枕使劲捶捶，把怒气都发泄在抱枕上，捶完抱着它深呼吸，心情就舒畅啦～",
+                "生气的时候，别忘啦，你可是温柔又可爱的人呀。别让怒气掩盖闪光点，笑一笑，把生气换成对美好的期待～",
+                "正和生气较劲，不如去户外跑两步。汗水流出来，怒气也跟着排出去，回来浑身轻松，啥气都没啦～",
+                "生气来袭，别慌，你有超棒的 \"情绪灭火器\" ，比如回忆开心的旅行、和朋友的玩笑，一下就把火扑灭，重归快乐～"
+            ],
+            "委屈": [
+                "心里委屈得发酸，别自己咽呀。找个信任的人说说，就算眼泪掉下来，说出来后，委屈也会像被晒过的被子，轻了好多～",
+                "觉得超委屈，别闷在心里。去看看傍晚的晚霞，那么绚烂，像生活在告诉你：\"别难过，美好一直在，委屈会过去～\"",
+                "委屈涌上心头，别否定自己。你看路边的小花，就算被风吹歪，也努力绽放，你这么好，委屈只是暂时的小风雨～",
+                "被委屈包围，别蜷缩起来。给自己买杯甜甜的奶茶，喝一口，甜味在舌尖散开，把委屈的苦味一点点赶跑～",
+                "委屈的时候，别忘啦，你是独一无二的宝贝。那些不懂你的人，是他们没眼光，你的好，总会被懂的人看见～",
+                "委屈得想哭，就痛痛快快哭一场吧。眼泪是情绪的出口，哭完擦擦脸，会发现天空还是蓝的，自己也更有力量～",
+                "遭遇委屈，别让它变成枷锁。去公园喂喂鸽子，看它们自由自在飞，你的心也该挣脱委屈，重新轻盈起来～",
+                "委屈在心里打转，别一直揪着不放。翻开旧相册，看看曾经大笑的自己，告诉现在的你：\"我能走出委屈，重归快乐～\"",
+                "觉得委屈没人懂，别绝望呀。深夜的月亮、清晨的露珠，都在默默陪伴你，它们懂你的委屈，也盼你快些开心～",
+                "委屈的时候，给自己个大大的拥抱。你已经很努力啦，别让委屈压垮自己，抱抱后，振作起来，美好会重新靠拢～"
+            ],
+            "无语": [
+                "碰上无语的事儿，别让尴尬停留！就当看了场荒谬小短剧，转身离开，去邂逅有趣的人和事，把无语甩在脑后～",
+                "被无语到翻白眼，别较真啦。生活偶尔出的无厘头考题，咱轻松交卷，大步迈向那些让你忍不住笑的美好～",
+                "遭遇无语时刻，别浪费情绪。把它当创作素材，回头写成段子，说不定把自己逗笑，还能收获别人的 \"哈哈\" ～",
+                "正处于无语状态，别僵在原地。去泡杯奇怪口味的茶，像生活的小玩笑，尝一口，说不定发现意外的惊喜～",
+                "对人和事无语，别让心情灰暗。打开窗，让风进来，把无语的浊气吹走，换清新空气，心情也跟着明亮～",
+                "无语的时候，别让它影响节奏。该干啥干啥，就当是生活插播的小插曲，播完了，精彩继续，你还是主角～",
+                "被无语噎住，别慌，你有幽默当解药。自嘲一句 \"这事儿够我笑一年\" ，笑着笑着，无语就变成有趣的回忆～",
+                "遇到无语的状况，别纠结为啥。像跳过不喜欢的歌，直接切到下一首，生活的旋律，由你掌控，美好会接上～",
+                "无语上头时，别让它憋出内伤。找个没人的地方，把无语喊出来，喊完就放下，重新拥抱生活的有意思～",
+                "处于无语氛围，别让自己闷闷的。画个搞怪的涂鸦，把无语的事儿变成画里的小怪兽，然后把画揉成球丢掉，烦恼也丢啦～"
+            ],
+            "开心": [
+                "开心模式启动！像捡到宝藏的小探险家，今天的阳光、 breeze（微风） ，都是生活给的礼物，尽情笑，把快乐放大～",
+                "选 \"开心\" 的你，像揣了蜜罐！每一步都轻快，看到的花更艳，遇到的人更暖，这好心情，能点亮一整个小世界～",
+                "开心冒泡啦！不管是吃到爱吃的美食，还是听到好笑的段子，都使劲儿享受，让这份快乐像涟漪，一圈圈扩散～",
+                "嘿，开心的你超有感染力！笑的时候眼睛弯成月牙，说话都带着欢快调调，快把这份开心传递，让身边也亮堂堂～",
+                "开心来袭，别藏着！去和喜欢的人分享，不管是聊聊日常，还是一起聊聊八卦，快乐会翻倍，把日子甜成棉花糖～",
+                "当 \"开心\" 是心情底色，就像给生活加了滤镜！看到的烦恼都变小，遇到的困难都像游戏关卡，轻松闯，继续嗨～",
+                "开心的你，像春天的小树苗，使劲儿往上长，吸收阳光和美好，把这份朝气传递，让周围都跟着生机勃勃～",
+                "选 \"开心\" 的日子，别错过小美好！路边的流浪猫、天空的形状，都藏着生活的小浪漫，用开心去发现，收获满满～",
+                "开心的时候，就像拥有超能力！能把平淡变有趣，把普通变特别，带着这份力量，去拥抱更多让你笑的瞬间～",
+                "开心在心里炸开，像放了场小烟花！每一朵火花都是美好，别让它熄灭，继续往前，让烟花一路绽放，照亮更多快乐～"
+            ],
+            "哭": [
+                "想哭就哭吧，眼泪不是软弱，是心里的潮水流淌。哭完擦擦脸，你会发现，天空没塌，自己还能继续勇敢往前走～",
+                "选 \"哭\" 的你，别觉得孤单。眼泪是情绪的雨，下过之后，心情会放晴，那些藏在心里的委屈、难过，都跟着流走啦～",
+                "哭的时候，把肩膀借给自己。好好抱抱那个难过的自己，哭完告诉自己：\"我挺过来啦，以后的路，带着力量走～\"",
+                "眼泪掉下来，别压抑。这是身体在帮你排毒，把心里的苦水排干净，腾出地方装往后的甜，生活还会给你惊喜～",
+                "想哭的时刻，别躲着。找个柔软的角落，让眼泪放肆流，流完后，你会发现，心里轻松好多，又能重新出发～",
+                "当 \"哭\" 释放情绪，就像给心做了次清洁。把灰尘、难过都冲走，留下的是更澄澈的自己，去迎接新的美好～",
+                "哭不是认输，是给自己充电。哭完后，你会带着新的韧性，面对生活，那些让你哭的事儿，再也难不倒你～",
+                "选 \"哭\" 的心情，别害怕。眼泪是成长的印记，每一滴都让你更懂自己，哭过之后，笑容会更灿烂～",
+                "哭的时候，想想雨后的彩虹。眼泪是雨，下完了，彩虹就会出现，你的心情也会像天空，重新绚烂起来～",
+                "想哭就痛痛快快哭一场，把心里的阴霾都哭散。哭完抬头，阳光还在，你也还是那个会笑、会发光的自己～"
+            ],
+            "白眼": [
+                "遇到无语事儿，翻个白眼当作 \"情绪结界\"，把糟心隔离在外～转身去街角吃份甜滋滋的小甜品，让好心情重新归位，管它啥破事儿，咱不 care！",
+                "对那些莫名其妙的人和事，大大方方翻个白眼，像甩掉粘人的小烦恼～然后约朋友去唱 K，用歌声把晦气吼跑，快乐才是生活主角呀！",
+                "碰上让你想翻白眼的状况，别憋着！翻完白眼，去逛热闹的夜市，看琳琅满目的小物件，听熙熙攘攘的笑声，烟火气能把坏情绪全冲散～",
+                "被无语到想翻白眼时，就当给生活做个 \"表情吐槽\"，翻完去做件超酷的小事，比如学个新舞步，用活力告诉世界：这点破事儿影响不了我！",
+                "对糟心事儿翻个白眼，像给心灵开扇 \"透气窗\"～接着去公园喂喂鸽子，看它们扑棱着翅膀抢食，烦恼也跟着被啄得稀碎，心情瞬间敞亮！",
+                "遇到膈应人的情况，翻个白眼当 \"防御盾\"，把负面情绪全反弹～然后回家泡个脚，让温热的水包裹双脚，疲惫和烦闷一起顺着水流溜走～",
+                "想翻白眼时就翻，别压抑！翻完去看场搞笑电影，让笑声把心里那点 \"无语疙瘩\" 震开，出来后又是活力满满的自己，继续拥抱美好～",
+                "碰到让人翻白眼的事儿，当作生活给的 \"趣味挑战\"，翻完白眼去尝试没吃过的美食，用味蕾的新奇体验，把坏心情替换成满足感～",
+                "对烦人状况翻个白眼，像给情绪做个 \"大扫除\"，扫完去图书馆找本有趣的书，沉浸在文字世界里，让智慧和宁静重新填满心～",
+                "被无语暴击时，翻个白眼快速 \"回血\"，接着去运动挥洒汗水，跑步时把烦恼甩在身后，跳操时让快乐蹦进心里，负面情绪统统退散！"
+            ],
+            "困难": [
+                "遇到困难别怕，就当是游戏里的隐藏关卡！每解决一个，你就升级一次，等通关回头看，会发现这些困难都是让你变强的经验包～",
+                "困难当前，别急着否定自己。你可是有超多隐藏技能的潜力股，只是还没完全解锁。慢慢来，每一步都在激活新能力～",
+                "被困难卡住时，换个角度想想。也许它不是来阻挡你的，而是来提醒你：\"嘿，试试另一条路，说不定风景更好呢～\"",
+                "困难像弹簧，你弱它就强。挺直腰板面对它，你会发现它其实没想象中那么可怕，而你已经比昨天更强大了～",
+                "当困难让你想放弃，想想那些你曾以为做不到却最终完成的事。你比自己想象的更有韧性，这次也一样能行～",
+                "困难是暂时的，就像乌云遮不住太阳。坚持下去，你会发现自己的能力远超想象，困难终将成为过去～",
+                "面对困难，别孤军奋战。寻求帮助不是软弱，而是智慧，有时候别人的一个小建议就能帮你打开新思路～",
+                "困难就像健身时的负重，虽然让你感到吃力，但正是它们让你变得更强大。挺过去，你会感谢这些挑战～",
+                "每个困难都是一次学习的机会。把它们当作老师，从中吸取经验，下次遇到类似情况就能从容应对～",
+                "困难再多，也抵不过你的坚持。一步一步来，每天解决一点点，终会看到胜利的曙光～"
+            ],
+            "惊讶": [
+                "惊讶得张大嘴？别急着合上！让这份惊喜多停留一会儿，像含着一颗会跳跳糖，感受它在心里噼里啪啦炸开的快乐～",
+                "被意外惊到啦？就当生活偷偷塞了颗糖给你！剥开糖纸，尝尝这份惊喜的甜味，让它在舌尖跳支小舞～",
+                "惊讶得瞪圆眼睛？快用这双发现惊喜的眼睛，去捕捉更多美好！生活处处有彩蛋，你永远不知道下一秒会遇见什么可爱～",
+                "哇哦！惊讶像个小烟花，在你心里\"砰\"地炸开～别慌，让这份震撼多停留一会儿，它会变成难忘的回忆～",
+                "惊讶得说不出话？那就先别说话！让这份意外带来的新鲜感，像气泡水一样在身体里咕嘟咕嘟冒泡～",
+                "被惊喜突袭啦？像被幸运女神轻轻戳了下额头～眨眨眼，确认这不是梦，然后开心地收下这份意外礼物吧！",
+                "惊讶得心跳加速？这是生活给你的小惊喜！像坐过山车时那个最刺激的俯冲，尖叫过后就是止不住的笑～",
+                "哇！惊讶像一阵突然的风，吹乱了你的头发，也吹开了新可能～别急着整理，先享受这意外的清凉～",
+                "惊讶得呆住啦？像被按下暂停键的小动物～等回过神来，记得给生活回个大大的笑容，谢谢它的调皮惊喜～",
+                "惊讶像魔术师的帽子，总能在你以为空空如也时，变出只兔子！保持这份惊喜感，生活会不断给你表演新魔术～"
+            ],
+            "生病": [
+                "生病啦？别硬撑，身体在提醒你该休息啦～像手机需要充电，你也需要躺平充会儿电，充满又是活力满满！",
+                "不舒服的时候，把自己当小宝宝照顾～热乎乎的粥、软软的毯子，还有甜甜的维C，都是你的治愈法宝～",
+                "生病像身体按了暂停键，那就趁机好好休息吧～看看平时没时间追的剧，听听喜欢的歌，让恢复期也变得惬意～",
+                "发烧头晕？想象身体里有支免疫小军队，正热火朝天打病毒呢！你要做的就是当好后勤，多喝水多睡觉支援它们～",
+                "喉咙痛得像吞刀片？试试蜂蜜水，甜甜滑滑像给喉咙穿件小毛衣～再想象有群小精灵正帮你修修补补，很快就好啦！",
+                "鼻塞呼吸难？想象鼻孔是两个小隧道，有群勤劳工人正在疏通～喝点热汤，蒸汽会帮他们加快进度哦！",
+                "浑身酸痛？这是身体在撒娇要关爱～泡个温水澡，像给每个细胞做SPA，再睡个长长的觉，明天会轻松很多～",
+                "生病没胃口？别强迫自己吃大餐～清粥小菜也很好，想象它们在温柔安抚你的肠胃，慢慢恢复战斗力～",
+                "咳嗽不停？想象肺里有片小森林，咳嗽是风在帮忙清扫落叶～多喝水保持森林湿润，打扫起来就没那么费力啦！",
+                "生病别着急，恢复需要时间～把自己裹成小粽子，看窗外云卷云舒，静静等待身体慢慢找回最佳状态～"
+            ]
+        };
+        
+        // 页面元素和变量
+        let currentUser = null;
+        let userData = JSON.parse(localStorage.getItem('moodLettersUsers')) || {};
+        let activityLog = JSON.parse(localStorage.getItem('moodLettersActivityLog')) || [];
+        
+        const loginPage = document.getElementById('login-page');
+        const mainPage = document.getElementById('main-page');
+        const lettersPage = document.getElementById('letters-page');
+        const adminPage = document.getElementById('admin-page');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const usernameDisplay = document.getElementById('username');
+        const moodGrid = document.querySelector('.mood-grid');
+        const envelopesContainer = document.getElementById('envelopes-container');
+        const moodTitle = document.getElementById('mood-title');
+        const letterContent = document.getElementById('letter-content');
+        const mainBackBtn = document.getElementById('main-back-btn');
+        const lettersBackBtn = document.getElementById('letters-back-btn');
+        const adminAccessBtn = document.getElementById('admin-access');
+        const adminLogin = document.getElementById('admin-login');
+        const adminContent = document.querySelector('.admin-content');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const adminError = document.querySelector('.admin-error');
+        const adminBackBtn = document.getElementById('admin-back-btn');
+        const adminTableBody = document.getElementById('admin-table-body');
+        
+        // 初始化页面状态
+        loginPage.style.display = 'flex';
+        mainPage.style.display = 'none';
+        lettersPage.style.display = 'none';
+        adminPage.style.display = 'none';
+        letterContent.style.display = 'none';
+        mainBackBtn.style.display = 'none';
+        adminContent.style.display = 'none';
+        adminError.style.display = 'none';
+        
+        // 登录功能
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = this.querySelector('input[type="text"]').value;
+            const password = this.querySelector('input[type="password"]').value;
+            
+            // 检查密码是否正确
+            if (userData[username] && userData[username].password && userData[username].password !== password) {
+                loginError.style.display = 'block';
+                return;
+            }
+            
+            loginError.style.display = 'none';
+            
+            // 保存或获取用户数据
+            if (!userData[username]) {
+                userData[username] = {
+                    password: password,
+                    openedLetters: {}
+                };
+                localStorage.setItem('moodLettersUsers', JSON.stringify(userData));
+            }
+            
+            currentUser = username;
+            usernameDisplay.textContent = username;
+            
+            // 切换页面显示
+            loginPage.style.display = 'none';
+            mainPage.style.display = 'block';
+            mainBackBtn.style.display = 'flex';
+        });
+        
+        // 心情按钮点击事件
+        moodGrid.addEventListener('click', function(e) {
+            const moodBtn = e.target.closest('.mood-btn');
+            if (!moodBtn) return;
+            
+            const mood = moodBtn.getAttribute('data-mood');
+            showLetters(mood);
+        });
+        
+        // 显示信件选择页面
+        function showLetters(mood) {
+            mainPage.style.display = 'none';
+            lettersPage.style.display = 'block';
+            moodTitle.textContent = `${mood}的时候...`;
+            lettersBackBtn.style.display = 'flex';
+            
+            // 清空并重新生成信封
+            envelopesContainer.innerHTML = '';
+            
+            // 检查用户已打开的信封
+            const openedLetters = userData[currentUser].openedLetters[mood] || [];
+            
+            // 创建10个信封
+            for (let i = 0; i < 10; i++) {
+                const envelope = document.createElement('div');
+                envelope.className = 'envelope';
+                if (openedLetters.includes(i)) {
+                    envelope.classList.add('opened');
+                }
+                envelope.setAttribute('data-index', i);
+                
+                const number = document.createElement('div');
+                number.className = 'envelope-number';
+                number.textContent = i + 1;
+                envelope.appendChild(number);
+                
+                envelope.addEventListener('click', function() {
+                    openLetter(mood, i);
+                });
+                
+                envelopesContainer.appendChild(envelope);
+            }
+        }
+        
+        // 打开信件
+        function openLetter(mood, index) {
+            // 记录活动日志
+            const logEntry = {
+                username: currentUser,
+                mood: mood,
+                letterIndex: index,
+                timestamp: new Date().toISOString()
+            };
+            activityLog.push(logEntry);
+            localStorage.setItem('moodLettersActivityLog', JSON.stringify(activityLog));
+            
+            // 标记为已打开
+            if (!userData[currentUser].openedLetters[mood]) {
+                userData[currentUser].openedLetters[mood] = [];
+            }
+            
+            if (!userData[currentUser].openedLetters[mood].includes(index)) {
+                userData[currentUser].openedLetters[mood].push(index);
+                localStorage.setItem('moodLettersUsers', JSON.stringify(userData));
+            }
+            
+            // 更新信封状态
+            const envelopes = document.querySelectorAll('.envelope');
+            envelopes[index].classList.add('opened');
+            
+            // 显示信件内容
+            const content = lettersData[mood][index];
+            letterContent.innerHTML = `
+                <p>${content}</p>
+                <button class="back-btn">返回信封</button>
+            `;
+            letterContent.style.display = 'block';
+        }
+        
+        // 返回按钮事件
+        mainBackBtn.addEventListener('click', function() {
+            mainPage.style.display = 'none';
+            loginPage.style.display = 'flex';
+        });
+        
+        lettersBackBtn.addEventListener('click', function() {
+            lettersPage.style.display = 'none';
+            letterContent.style.display = 'none';
+            mainPage.style.display = 'block';
+        });
+        
+        // 全局返回按钮事件委托
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('back-btn')) {
+                letterContent.style.display = 'none';
+            }
+        });
+        
+        // 管理员入口
+        adminAccessBtn.addEventListener('click', function() {
+            loginPage.style.display = 'none';
+            adminPage.style.display = 'block';
+        });
+        
+        // 管理员登录
+        adminLoginBtn.addEventListener('click', function() {
+            if (adminPasswordInput.value === '1130') {
+                adminError.style.display = 'none';
+                adminLogin.style.display = 'none';
+                adminContent.style.display = 'block';
+                
+                // 加载活动日志
+                loadActivityLog();
+            } else {
+                adminError.style.display = 'block';
+            }
+        });
+        
+        // 加载活动日志
+        function loadActivityLog() {
+            adminTableBody.innerHTML = '';
+            
+            // 按时间倒序排列
+            const sortedLog = [...activityLog].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            sortedLog.forEach(log => {
+                const row = document.createElement('tr');
+                
+                const usernameCell = document.createElement('td');
+                usernameCell.textContent = log.username;
+                
+                const moodCell = document.createElement('td');
+                moodCell.textContent = log.mood;
+                
+                const letterCell = document.createElement('td');
+                letterCell.textContent = log.letterIndex + 1;
+                
+                const timeCell = document.createElement('td');
+                timeCell.textContent = new Date(log.timestamp).toLocaleString();
+                
+                row.appendChild(usernameCell);
+                row.appendChild(moodCell);
+                row.appendChild(letterCell);
+                row.appendChild(timeCell);
+                
+                adminTableBody.appendChild(row);
+            });
+        }
+        
+        // 管理员返回按钮
+        adminBackBtn.addEventListener('click', function() {
+            adminPage.style.display = 'none';
+            loginPage.style.display = 'flex';
+            adminLogin.style.display = 'flex';
+            adminContent.style.display = 'none';
+            adminPasswordInput.value = '';
+        });
+    </script>
+</body>
+</html>
